@@ -1,0 +1,44 @@
+name: deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      workflow-input-1:
+        description: 'workflow-input-1'
+        required: true
+        default: ''
+      workflow-input-2:
+        description: 'workflow-input-2'
+        required: true
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: tibdex/github-app-token@v1
+      id: get_installation_token
+      with: 
+        app_id: 170284
+        private_key: ${{ secrets.PRIVATE_KEY }}
+
+    - run: | 
+        echo "Hello, world!"
+        echo "workflow-input-1 is ${{ github.event.inputs.workflow-input-1 }}"
+        echo "workflow-input-2 is ${{ github.event.inputs.workflow-input-2 }}"
+
+    - uses: LouisBrunner/checks-action@v1.3.1
+      if: always()
+      with:
+        sha: ${{ github.sha }}
+        token: ${{ steps.get_installation_token.outputs.token }}
+        # token: ${{ github.token }}
+        name: Second Job
+        conclusion: ${{ job.status }}
+        details_url: https://josh-ops.com/posts/github-code-coverage/
+        action_url: https://josh-ops.com/posts/github-code-coverage/
+        output: |
+          {"summary":""}
+        output_text_description_file: code-coverage-results.md
